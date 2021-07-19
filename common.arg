@@ -1,0 +1,301 @@
+/// common.arg : OllyDbg v2.01 common function and structure descriptions
+/// 
+INFO "=== OllyDbg common function and structure descriptions ==="
+INFO "This file outlines the available statements and their known usages, with examples."
+
+
+///////////////////////////////////////////////////////////////////////////////
+//// BASICS ///////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
+/// NUMBERS: hexidecimal unsigned integers only
+
+// First of all... EVERYTHING IS IN HEX! Don't be fooled by the hex specifier
+//  not being required, it WILL bite you later if you're not paying attention!
+//
+// CONST 10 MYCONST_10     // this evaluates to 16 (0x10)
+// CONST 0x10 MYCONST_0x10 // this evaluates to 16 (0x10)
+// CONST 0xa MYCONST_0xa   // this evaluates to 10 (0xa)
+// CONST a MYCONST_a       // this produces an ERROR because of the alpha
+//                         //  characters not being treated as a number!
+
+
+/// COMMENTS: '//' line commands and '/*','*/' block comments
+
+// The classic continuation characater '\', often used in languages to continue
+//  a line, is not supported in OllyDbg .arg files. In comments OR in normal lines.
+
+// Line comment with continuation escape \
+INFO "This message shows up in the log, meaning line comment continuation escapes are not supported"
+
+// Block comments /* like this */ are supported as normal
+/*
+INFO "If you can see this, then block comments are not working."
+*/
+
+
+/// NEWLINES: line separation is required for many statements, but not all
+
+// "quoted strings" cannot be separated by new lines,
+//  and don't always support newline escapes.
+
+// Many keyword statements do not support being placed over multiple lines,
+//  but it's hard to pinpoint which ones, usually reported errors can help
+//  determine when and when not to add a new line... It's messy.
+
+
+/// WHITESPACE: whitespace is generally always valid between tokens
+
+// Whitespace is NOT required for any form of indentation, it's completely ignored.
+// Whitespace is NOT required between a type*name combo, though it's not very readable.
+
+// Whitespace CANNOT be used between registers in the PRESERVES statement of
+//  the FUNCTION block.
+
+
+/// TYPES: many hardcoded types are included as well as countless WINAPI structs and aliases
+
+// A type is known to be created when using the following blocks:
+//  FUNCTION, STRUCT, TYPE
+
+// A type IS NOT created when using this block:
+//  GROUP (see notes in GROUP section on how to make this usable as a type)
+
+/// BUG: Be careful about using the GUID structure, as it does not use the
+///       correct size, it's size is DWORD+WORD+WORD+BYTE
+///       (where BYTE should have been an array)
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+//// STATEMENTS ///////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
+// The following statement keywords are available:
+// INFO, CONST, GROUP, STRUCT, TYPE, FUNCTION(etc.), RAWDATA, TRANSLATOR
+
+
+///////////////////////////////////////////////////////////////////////////////
+//// INFO /////////////////////////////////////////////////////////////////////
+
+// A simple print statement that will be displayed in the log as the file is parsed.
+
+/// USAGE: INFO <"text string">  **ESCAPES: '\\', '\"'**
+
+
+/// EXAMPLE:
+INFO "INFO \"This is an example message\""
+
+
+///////////////////////////////////////////////////////////////////////////////
+//// CONST ////////////////////////////////////////////////////////////////////
+
+// Define a constant UNSIGNED INTEGER value.
+// Constants can be used in-place where any number would normally be required,
+//  the only exception to this being... defining other constants. :)
+
+/// USAGE: CONST <number> <name>
+
+
+/// EXAMPLE:
+CONST 0xa MYCONST_TEN
+
+
+///////////////////////////////////////////////////////////////////////////////
+//// STRUCT ///////////////////////////////////////////////////////////////////
+
+// Define a data structure. In the memory view, data and pointers to data can
+//  be decoded as structures (or an array of N structures).
+
+/// USAGE: STRUCT <name>  [[<body>...]]  END
+///     FIELD: <fieldsize>[*<repeat>] <type>[*] <name>
+///         FIELDSIZE: <BYTE|WORD|THREE|DWORD|QWORD|TBYTE>  **SIZES: 1,2,3,4,8,10**
+
+
+/// BUG: The fieldsize will not guarantee this much data is consumed.
+///      For example, try creating a structure with: BYTE*0x10 GUID guid,
+///       you'll see that only 11 bytes are consumed... but this could be
+///       entirely the fault of the GUID struct as used by ollydbg.
+
+/// NOTES: Nesting a self-referencing struct pointer isn't really possible,
+///         not to mention that pointers to structures within structures are
+///         basically useless in ollydbg.
+///        If you want to include a "fake" STRUCT referencing itself, define
+///         a dummy STRUCT of the same name beforehand (fields don't matter).
+
+
+/// EXAMPLE:
+STRUCT MyStruct
+	DWORD UINT foo    // unsigned int
+	BYTE UINT bar     // unsigned char
+	BYTE*0x100 ATEXT displayName // flat character array: char[256]
+	                             // ATEXT generally seems like the best choice
+								 // for a type to consume a lot of bytes that
+								 // are unknown/or unused.
+	QWORD*2 RECT rcClient  // WINAPI RECT structure: { left, top, right, bottom }
+
+	BYTE*10 INT sixteenBytes  // Be careful, ALL numbers are read in hexidecimal,
+	                          // it's recommended to ALWAYS include the hex specifier: 0x10
+END
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+//// GROUP ////////////////////////////////////////////////////////////////////
+
+// Define an enumeration. It's not clear if flags are supported.
+// All constants defined within a GROUP block are global,
+//  just as if they were defined outside of a GROUP block. (and like C enums)
+
+/// USAGE: GROUP <name>  [[body...]]  END
+///     CONST: CONST <number> <name>
+
+
+/// BUG: The counter displaying the number of groups loaded in the log does not work,
+///      however groups still function "normally".
+
+/// IMPORTANT: There is a very limited number of groups allowed to be defined
+///            in Ollydbg, use these sparingly. :(
+
+/// NOTES: In order to use a GROUP in a STRUCT declaration,
+///        the group must be declared in a TYPE block.
+
+
+/// EXAMPLE:
+GROUP MyGroup
+	CONST 0x0 MYGROUP_0
+	CONST 0x1 MYGROUP_1
+	CONST 0x2 MYGROUP_2
+END
+// The name conflicts here are not an issue, but they don't need to be the same.
+//  (the name of TYPE must be used by STRUCT)
+TYPE MyGroup  GROUP MyGroup  END
+
+STRUCT UsesExampleGroup
+	DWORD MyGroup mygroup  // displays values as group names.
+END
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+//// TYPE /////////////////////////////////////////////////////////////////////
+
+// This does A LOT of things, and almost none of them make sense at the moment.
+// The only known usage is that they are REQUIRED to use GROUPs as a type in STRUCTs.
+
+/// USAGE: TYPE <name>  [[body...]]  END
+///     GROUP:   GROUP <identifier:group>
+///     STRUCT:  STRUCT <identifier:struct>
+///     IF:      IF [op] <number>  [[body...]]  ENDIF
+///       OP:    <EQ|NE|SET|BIT|ZERO|CLR|LE|GE|<MASK|FIELD> <EQ|NE>>
+///         BODY:  **everything from TYPE body except SELECT block, IF can be nested**
+///         ELIF:  <ELIF|ELSEIF> [op] <number>  [[body...]]
+///         ELSE:  ELSE  [[body...]]
+///     SELECT:  SELECT <MASK|FIELD|SIGFIELD> <number>  [[body...]]  ENDSEL
+///         BODY:  **everything from TYPE body except SELECT|IF block**
+///     SET:     SET <name> [OUT] <name2[*]>   **BUG: "SET <name> <name2[*]> <blah>" is valid??**
+///     BIT:     BIT <number> <name>
+///     HEXBITS: HEXBITS <number>
+///     TEXT:    TEXT <textdata>
+///     TEXT:    TEXT <"text data">
+///     PURGE:   PURGE   **NOTE: functionality unknown, may just be another type**
+///     TYPE:    <HEX|HEXDATA|HEX8|BOOL|BYTE|WORD|INT|UINT|VOID|VOIDPTR|CHAR|WCHAR|
+///               ASCII|UNICODE|MASCII|MUNICODE|FORMAT|WFORMAT|SCAN|WSCAN|ATEXT|WTEXT|
+///               RSRC_STRING|QUAD|QUAD_LO|QUAD_HI|FLOAT|DOUBLE|DOUBLE_LO|DOUBLE_HI|
+///               LDOUBLE|LDOUBLE_LO|LDOUBLE_MI|LDOUBLE_HI|HANDLE|HWND|HMODULE|HDC|
+///               HGDI|HMEM|HKEY|CALLBACK|WINPROCA|WINPROCW|PROCID|NETSW|NETSD|NETGW|
+///               NETGD|NETBW|NETBD|NETCI|NETCH|NETCF|NETCU>
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+//// FUNCTION /////////////////////////////////////////////////////////////////
+
+// Defines a function. A function must either specify a module it comes from,
+//  or "_INTERN_", which supposedly means the current module...
+
+/// FUNCTION: KEYWORDS
+/// - NORETURN : (before FUNCTION keyword), states no return value... (or the function exits the program???)
+/// - _INTERN_ : (during either Module or function name... not sure, sets flag, likely meaning it's from within the runnning program)
+/// - FUNCTION|PASCAL|CFUNC|STDFUNC|STDC : function keyword and calling convention
+/// - RETURNS <type> : state return type of function, Structures must be returned as pointers (Structure*)
+/// - PRESERVES <REG[,REG,...]> : state registers that will be the same after the function returns (seems to only be Exx registers, no halfs, and no STx registers, SEE BUGS note)
+/// - MARK <parameter> : mark a parameter... unsure of usage
+/// - OUT <parameter> : declare a parameter as output only (must be a pointer, or pointer type (like ASCII))
+/// - ... : end of function var args (must have at least one parameter before, cannot be named)
+
+/// USAGE: [NORETURN] <convention> <module|_INTERN_>.<name>  [[body...]]  END
+///   CONVENTION: <FUNCTION|PASCAL|CFUNC|STDFUNC|STDC>
+///     ARGS:       [OUT|MARK] <type> <name>  **OUT: requires type to be pointer, MARK: usage unknown**
+///     VARARGS:    ...
+///     RETURNS:    RETURNS <type>  **ONCE: | OPTIONAL:**
+///     PRESERVES:  PRESERVES <REG[,REG[,REG[,...]]]>  **ONCE: | BUG: requires empty line afterwards**
+
+
+/// NOTES: It's not clear whether the NORETURN keyword states the function has
+///        no return value, or if it does not *return to the caller* (aka exits)
+
+
+/// EXAMPLE:
+FUNCTION MyModule.MyFunction
+	// parameteres
+	OUT BYTE* lpBuffer
+	UINT count
+	// return value
+	RETURNS UINT
+	// information for disassembler
+	PRESERVES EAX,ECX,EDI  // Note how we require the empty line after preserves... :\
+
+END
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+//// RAWDATA //////////////////////////////////////////////////////////////////
+
+// Define raw binary data. FEATURES may be similar to what is defined in a PE
+//  executable's section flags... but I don't know much about that.
+
+/// USAGE: RAWDATA <name>  [[<body>...]]  END
+///    BYTES:    [BYTE] <number[ number[ number [...]]]>
+///    DWORDS:   DWORD  <number[ number[ number [...]]]>
+///    TEXT:     <"ascii text data">
+///    FEATURES: FEATURES <number>  **ONCE:**
+
+
+/// EXAMPLE:
+RAWDATA MyRawdata
+	0xff 11 0xad 4 1   // implicit BYTE values
+	BYTE 0xff 11 0xee  // explicit BYTE values
+	// hex bytes require spacing, this would be invalid:
+	// BYTE 0x11ff4448762429837456892374562398746
+	DWORD 0xff 11 0xee       // DWORD values
+	DWORD 123123 MYCONST_TEN // DWORD values with constant identifier
+	"HELLO WORLD"      // ASCII text data
+
+	FEATURES 0x25253453      // feature flags(?)
+END
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+//// TRANSLATOR ///////////////////////////////////////////////////////////////
+
+// This is probably supposed to replace translatable text... either in the
+//  interface, or in strings within the program dump... however how to use
+//  these is unknown.
+
+/// USAGE: TRANSLATOR <name>  [[<body>...]]  END
+///    RECORD: <inputname> = <outputname>
+///    RECORD: <"input name"> = <"output name">
+
+
+/// EXAMPLE:
+TRANSLATOR MyTranslator
+	"Some text" = "Some text to replace with"
+	"More text" = "dQw4w9WgXcQ"
+END
+
+
+
+///////////////////////////////////////////////////////////////////////////////
