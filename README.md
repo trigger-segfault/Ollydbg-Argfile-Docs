@@ -3,6 +3,10 @@ Documentation on the *undocumented* OllyDbg v2.01 `.arg` file, allowing definiti
 
 Initial information on the `.arg` file was found thanks to [this StackOverflow answer](https://reverseengineering.stackexchange.com/a/11911/36150). Remaining information has been discovered through reverse engineering with Ghidra and extensive trial-and-error testing. There is still plenty that is not fully known, or understood in the slightest.
 
+* See the **[Wiki Home](https://github.com/trigger-segfault/Ollydbg-Argfile-Docs/wiki)** for in-depth documentation on the `.arg` file syntax.
+* See the **[common.arg](https://github.com/trigger-segfault/Ollydbg-Argfile-Docs/blob/main/common.arg)** file for a working example with documentation comments written in.
+
+***
 
 ## Basics
 
@@ -39,6 +43,8 @@ Errors produced when loading an `.arg` file will be shown in the **Log** window 
 -  Line 170. Extra characters on line
 ```
 </details>
+
+***
 
 ## See also
 

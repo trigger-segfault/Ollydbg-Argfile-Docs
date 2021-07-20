@@ -1,0 +1,32 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+  ],
+  "settings": {
+    "[plaintext]": {
+      "files.eol": "\r\n"
+    },
+    "[json|jsonc|python]": {
+      "files.eol": "\n"
+    },
+    
+    ////////////////////////////////////////////////////////
+
+    "files.associations": {
+      // easiest syntax highlighting to read .mjs scripts in (cpp is also decent)
+      "*.arg": "cpp"
+    },
+
+    // Excel Viewer extension
+    "csv-preview.formatValues": "never",
+
+    // VSIcons extension
+    "vsicons.associations.files": [
+    ],
+
+    // Hexdump extension
+    "hexdump.littleEndian": true
+  }
+}

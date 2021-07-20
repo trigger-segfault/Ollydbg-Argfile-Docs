@@ -1,3 +1,28 @@
+###########################################
+## Added to .gitignore
+
+## Copyright + sensitive data
+
+/data/copyright
+
+# Programs
+*.exe
+*.dll
+*.lib
+
+*.sqlite
+
+
+## Uncommitted lazy backups
+_backup/
+
+## Unorganized testing
+test/
+
+
+###########################################
+## Original .gitignore
+
 # Prerequisites
 *.d
 

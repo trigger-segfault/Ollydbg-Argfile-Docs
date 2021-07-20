@@ -1,0 +1,46 @@
+{
+  "name": "vscode-ollydbg-arg",
+  "displayName": "OllyDbg Arg Descriptions File",
+  "description": "OllyDbg v2.01 Arg Functions/Structures Descriptions language support for VS Code",
+  "version": "0.1.0",
+	"publisher": "trigger_segfault",
+  "license": "LICENSE.md",
+  "readme": "README.md",
+  "icon": "icon.png",
+  "engines": {
+    "vscode": "^1.32.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+	"galleryBanner": {
+		"color": "#dd0807",
+    "theme": "dark"
+  },
+  "homepage": "https://github.com/trigger-segfault/Ollydbg-Argfile-Docs",
+  "author": {
+    "name": "trigger_segfault",
+    "email": "triggerstools@gmail.com",
+    "url": "https://trigger-segfault.github.io"
+  },
+	"keywords": [
+    "ollydbg",
+    "functions",
+    "structures",
+    "arg"
+	],
+  "contributes": {
+    "languages": [{
+      "id": "ollydbg-arg",
+      "aliases": ["OllyDbg Arg Descriptions", "OllyDbg arg", "arg"],
+      "extensions": [".arg"],
+      "configuration": "./ollydbg-arg-language-configuration.json",
+      "filenames": ["common.arg"]
+    }],
+    "grammars": [{
+      "language": "ollydbg-arg",
+      "scopeName": "source.ollydbg-arg",
+      "path": "./syntaxes/ollydbg-arg.tmLanguage.json"
+    }]
+  }
+}

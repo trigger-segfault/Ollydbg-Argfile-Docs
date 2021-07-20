@@ -1,0 +1,39 @@
+{
+  "comments": {
+    "lineComment": "//",
+    "blockComment": [ "/*", "*/" ]
+  },
+  // symbols used as brackets
+  "brackets": [
+    // ["{", "}"],
+
+    // // used in comments to document property value formats
+    // ["<", ">"],
+    // ["[", "]"]
+  ],
+  // symbols that are auto closed when typing
+  "autoClosingPairs": [
+    // { "open": "{", "close": "}", "notIn": ["string", "comment"] }
+  ],
+  // symbols that that can be used to surround a selection
+  "surroundingPairs": [ ],
+  // behavior for foldable blocks of code
+  // "folding": {
+  //   // fold based on change in indentation (which is increased inside functions -> labels -> instructions)
+  //   "offSide": false,
+  //   "markers": {
+  //     "start": "^\\s*(?:STRUCT|GROUP|",
+  //     // "end": "^.*(?=\n\\s*\\})"
+  //     "end": "^\\s*\\}"
+  //   }
+  // },
+  "indentationRules": {
+    "increaseIndentPattern": "^\\s*(?:STRUCT|GROUP|TYPE|(NORETURN\\s+FUNCTION)|IF)",
+    "decreaseIndentPattern": "END(?:SEL|IF)?",
+
+    "unIndentedLinePattern": "^\\s*(ELIF|ELSEIF|ELSE)"  // is this usage correct?
+  }//,
+  // Special prefixes "!|@"\
+  // "wordPattern": "([\\s\\{\\}\\|\\:\\,\\;]+)"
+  //"wordPattern": "(-?\\d*\\.\\d\\w*)|([\\@\\!\\*]?[\\@\\#\\%\\^\\&\\*\\(\\)\\[\\]\\{\\}\\|\\;\\:\\,\\<\\>\\s]+)"
+}
