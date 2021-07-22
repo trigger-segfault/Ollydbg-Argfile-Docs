@@ -11,6 +11,10 @@
     "[json|jsonc|python]": {
       "files.eol": "\n"
     },
+    "[cpp]": {
+      "editor.colorDecorators": false
+      // "color-highlight.enable": false
+    },
     
     ////////////////////////////////////////////////////////
 
@@ -18,6 +22,8 @@
       // easiest syntax highlighting to read .mjs scripts in (cpp is also decent)
       "*.arg": "cpp"
     },
+
+    "color-highlight.enable": false,
 
     // Excel Viewer extension
     "csv-preview.formatValues": "never",
